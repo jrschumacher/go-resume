@@ -11,9 +11,12 @@ var (
 	// RootCmd sets task command config
 	RootCmd = &cobra.Command{
 		Use: "resume",
+	}
+	VersionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "show version",
 		Run: func(cmd *cobra.Command, args []string) {
 			versionCommand(cmd, args)
-			cmd.Usage()
 		},
 	}
 )

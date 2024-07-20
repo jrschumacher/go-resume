@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -17,18 +16,46 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/usk81/go-resume/shema"
+	"github.com/usk81/go-resume/schema"
 )
 
 var (
 	exportCmd = &cobra.Command{
-		Use:   "export",
+		Use:   "export <json-resume>",
 		Short: "converts from JSON-Resume and exports to file",
 		Long:  "converts from JSON-Resume and exports to file",
-		Run:   exportCommand,
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			format := cmd.Flag("format").Value.String()
+			templateDir := cmd.Flag("template-dir").Value.String()
+
+			src := args[0]
+			dest := cmd.Flag("output").Value.String()
+
+			var r schema.Resume
+			if err := ParseResumeFromFile(src, &r); err != nil {
+				Exit(err)
+			}
+			if err := schema.Validation(r); err != nil {
+				Exit(err)
+			}
+
+			switch format {
+			case "html":
+				OutputHTML(r, templateDir, dest)
+			default:
+				Exit(errors.Errorf("%s is not supported", format))
+			}
+		},
 	}
 	sr = regexp.MustCompile("[ 　]")
 )
+
+func init() {
+	exportCmd.Flags().StringP("format", "f", "html", "output format (html)")
+	exportCmd.Flags().StringP("template-dir", "t", "themes", "template directory")
+	exportCmd.Flags().StringP("output", "o", ".", "output directory")
+}
 
 // Name stores name and ruby
 type Name struct {
@@ -38,33 +65,6 @@ type Name struct {
 
 func init() {
 	RootCmd.AddCommand(exportCmd)
-}
-
-func exportCommand(cmd *cobra.Command, args []string) {
-	if len(args) < 4 {
-		Exit(errors.New("variables are not enough; resume export (template directory path) (output directory path) (json resume file path)"), 1)
-	}
-
-	if err := ExportAction(args[0], args[1], args[2], args[3]); err != nil {
-		Exit(err, 1)
-	}
-}
-
-// ExportAction converts from JSON-Resume and exports to file
-func ExportAction(format string, src string, dest string, jp string) error {
-	var r shema.Resume
-	err := ParseResumeFromFile(jp, &r)
-	if err != nil {
-		return err
-	}
-	if err = shema.Validation(r); err != nil {
-		return err
-	}
-	switch format {
-	case "html":
-		return OutputHTML(r, src, dest)
-	}
-	return errors.Errorf("%s is incorrect format", format)
 }
 
 // ParseResumeFromFile opens a json file and parse JSON-Resume
@@ -86,7 +86,7 @@ func ParseResumeFromFile(fp string, r interface{}) (err error) {
 }
 
 // OutputHTML outputs HTML file and copy assets
-func OutputHTML(r shema.Resume, src string, dst string) (err error) {
+func OutputHTML(r schema.Resume, src string, dst string) (err error) {
 	rt := regexp.MustCompile(`^resume(\.html)*\.(template|tpl).*$`)
 
 	if d, err := isDir(src); !d || err != nil {
@@ -111,7 +111,7 @@ func OutputHTML(r shema.Resume, src string, dst string) (err error) {
 	}
 	defer f.Close()
 
-	sd, err := ioutil.ReadDir(src)
+	sd, err := os.ReadDir(src)
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func OutputHTML(r shema.Resume, src string, dst string) (err error) {
 }
 
 // CreateHTML creates HTML data
-func CreateHTML(w io.Writer, r shema.Resume, tp string) error {
+func CreateHTML(w io.Writer, r schema.Resume, tp string) error {
 	tpl := filepath.Base(tp)
 
 	fs := template.FuncMap{

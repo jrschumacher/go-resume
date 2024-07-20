@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/usk81/go-resume/shema"
+	"github.com/usk81/go-resume/schema"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -47,12 +47,12 @@ func validateAction(path string) error {
 	}
 	defer f.Close()
 
-	var r shema.Resume
+	var r schema.Resume
 	if err = json.NewDecoder(f).Decode(&r); err != nil {
 		return err
 	}
 
-	if es := shema.Validation(&r); es != nil {
+	if es := schema.Validation(&r); es != nil {
 		if _, ok := es.(*validator.InvalidValidationError); ok {
 			fmt.Println(es)
 			return nil

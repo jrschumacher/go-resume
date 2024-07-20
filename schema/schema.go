@@ -1,4 +1,4 @@
-package shema
+package schema
 
 type Resume struct {
 	Basics       Basics        `json:"basics"`
