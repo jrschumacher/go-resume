@@ -13,7 +13,7 @@ type Resume struct {
 	Interests    []Interest    `json:"interests" validate:"omitempty,dive,required"`
 	References   []Reference   `json:"references" validate:"omitempty,dive,required"`
 	Projects     []Project     `json:"projects" validate:"omitempty,dive,required"`
-	Meta         *Meta         `json:"meta"`
+	Meta         Meta          `json:"meta"`
 }
 
 type Basics struct {
@@ -24,7 +24,7 @@ type Basics struct {
 	Phone    string    `json:"phone"`
 	URL      string    `json:"url" validate:"omitempty,url"`
 	Summary  string    `json:"summary"`
-	Location *Location `json:"location"`
+	Location Location  `json:"location"`
 	Profiles []Profile `json:"profiles" validate:"omitempty,dive,required"`
 }
 
