@@ -29,11 +29,11 @@ type Basics struct {
 }
 
 type Location struct {
-	Address      string `json:"address"`
-	PostalCode   string `json:"postalCode"`
-	City         string `json:"city"`
-	ConuntryCode string `json:"countryCode"`
-	Region       string `json:"region"`
+	Address     string `json:"address"`
+	PostalCode  string `json:"postalCode"`
+	City        string `json:"city"`
+	CountryCode string `json:"countryCode"`
+	Region      string `json:"region"`
 }
 
 // Profile is social network that you participate in
@@ -146,7 +146,7 @@ type Meta struct {
 	LastModified string `json:"lastModified"`
 }
 
-// Validation validates Resume sturct
+// Validation validates Resume struct
 func (r Resume) Validation() (err error) {
 	return Validation(r)
 }
